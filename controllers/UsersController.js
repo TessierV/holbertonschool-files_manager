@@ -25,10 +25,10 @@ export default class UsersController {
       const newUser = { email: userEmail, password: hashedPassword };
 
       try {
-        await dbClient.db.collection('users').insertOne(newUser, (err) => {
-          const userId = newUser._id;
-          return res.status(201).send({ id: userId, email: userEmail });
-        });
+        const result = await dbClient.db.collection('users').insertOne(newUser);
+        const userId = result.insertedId;
+        return res.status(201).send({ id: userId, email: userEmail });
+
       } catch (error) {
         return res.status(error.status).send({ 'error': error });
       }

@@ -9,33 +9,33 @@ export default class FilesController {
     try {
       const token = req.headers['x-token'];
       if (!token) {
-        return res.status(401).json({ error: 'Unauthorized: Token missing' });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       // Verify user authentication using token
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       const { name, type, parentId = 0, isPublic = false, data } = req.body;
 
       if (!name) {
-        return res.status(400).json({ error: 'Bad Request: Missing name' });
+        return res.status(400).json({ error: 'Missing name' });
       }
 
       const _id = ObjectId.isValid(userId) ? new ObjectId(userId) : null;
       if (!_id) {
-        return res.status(401).json({ error: 'Unauthorized: Invalid user ID' });
+        return res.status(401).json({ error: 'Missing ID' });
       }
 
       const fileTypes = ['folder', 'file', 'image'];
       if (!type || !fileTypes.includes(type)) {
-        return res.status(400).json({ error: 'Bad Request: Invalid file type' });
+        return res.status(400).json({ error: 'Missing type' });
       }
 
       if (!data && type !== 'folder') {
-        return res.status(400).json({ error: 'Bad Request: Missing data' });
+        return res.status(400).json({ error: 'Missing data' });
       }
 
       if (parentId !== 0) {
@@ -43,11 +43,11 @@ export default class FilesController {
         const parentFile = await filesCollection.findOne({ _id: new ObjectId(parentId) });
 
         if (!parentFile) {
-          return res.status(400).json({ error: 'Bad Request: Parent not found' });
+          return res.status(400).json({ error: 'Parent not found' });
         }
 
         if (parentFile.type !== 'folder') {
-          return res.status(400).json({ error: 'Bad Request: Parent is not a folder' });
+          return res.status(400).json({ error: 'Parent is not a folder' });
         }
       }
 
@@ -114,7 +114,7 @@ export default class FilesController {
       const token = req.headers['x-token'];
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       // Retrieve file information from database
@@ -145,7 +145,7 @@ export default class FilesController {
       const token = req.headers['x-token'];
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       // Get parent ID and page number from request query

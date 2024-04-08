@@ -22,11 +22,8 @@ export default class FilesController {
       return res.status(400).json({ error: 'Missing name' });
     }
 
-    // Retrieve user from database
-    const _id = new ObjectId(userId);
-    const usersCollection = dbClient.db.collection('users');
-    const user = await usersCollection.findOne({ _id });
-    if (!user) {
+    const _id = ObjectId.isValid(userId) ? new ObjectId(userId) : null; // Vérifie si userId est une chaîne ObjectId valide
+    if (!_id) {
       return res.status(401).json({ error: 'Unauthorized 3' });
     }
 
@@ -64,7 +61,12 @@ export default class FilesController {
         isPublic,
         parentId,
       };
-      await filesCollection.insertOne(newFile);
+      try {
+        newFile = await filesCollection.insertOne(newFile);
+      } catch (error) {
+        console.error('Error inserting folder:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
 
       // Creation of the file on the server.
       const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
@@ -86,19 +88,24 @@ export default class FilesController {
         console.error('Error writing file:', error);
         return res.status(500).json({ error: 'Issue with writing file' });
       }
-      newFile = await dbClient.db.collection('files').insertOne({
-        userId: new ObjectId(userId),
-        name,
-        type,
-        isPublic,
-        parentId,
-        localPath,
-      });
+      try {
+        newFile = await dbClient.db.collection('files').insertOne({
+          userId: new ObjectId(userId),
+          name,
+          type,
+          isPublic,
+          parentId,
+          localPath,
+        });
+      } catch (error) {
+        console.error('Error inserting file:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
     }
 
     // Return the new file.
     return res.status(201).send({
-      id: newFile.insertedId,
+      id: newFile ? newFile.insertedId : null,
       userId,
       name,
       type,
@@ -109,63 +116,73 @@ export default class FilesController {
 
   // Method to retrieve the information of a file.
   static async getShow(req, res) {
-    // Retrieves the authentication token from the req header.
-    const token = req.headers['x-token'];
-    const userId = await redisClient.get(`auth_${token}`);
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized 4' });
-    }
+    try {
+      // Retrieve the authentication token from the req header.
+      const token = req.headers['x-token'];
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized 4' });
+      }
 
-    // Retrieves the file information from the database.
-    const { id } = req.params;
-    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(id), userId: ObjectId(userId) });
-    if (!file) {
-      return res.status(404).json({ error: 'Not found' });
-    }
+      // Retrieve the file information from the database.
+      const { id } = req.params;
+      const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(id), userId: ObjectId(userId) });
+      if (!file) {
+        return res.status(404).json({ error: 'Not found' });
+      }
 
-    return res.status(200).json({
-      id: file._id,
-      userId: file.userId,
-      name: file.name,
-      type: file.type,
-      isPublic: file.isPublic,
-      parentId: file.parentId,
-    });
+      return res.status(200).json({
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: file.isPublic,
+        parentId: file.parentId,
+      });
+    } catch (error) {
+      console.error('Error retrieving file:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 
   // Method to retrieve the list of files.
   static async getIndex(req, res) {
-    // Retrieves the authentication token from the req header.
-    const token = req.headers['x-token'];
-    const userId = await redisClient.get(`auth_${token}`);
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized 5' });
+    try {
+      // Retrieve the authentication token from the req header.
+      const token = req.headers['x-token'];
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized 5' });
+      }
+
+      // Retrieve the parent ID and the page number from the req query.
+      const { parentId, page = 0 } = req.query;
+      const query = { userId: ObjectId(userId) };
+      if (parentId) {
+        query.parentId = ObjectId(parentId);
+      }
+
+      // Retrieve the list of files from the database.
+      const files = await dbClient.db.collection('files')
+        .find(query)
+        .skip(page * 20)
+        .limit(20)
+        .toArray();
+
+      // Format the list of files.
+      const filesFormatted = files.map((file) => ({
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: file.isPublic,
+        parentId: file.parentId,
+      }));
+
+      return res.status(200).json(filesFormatted);
+    } catch (error) {
+      console.error('Error retrieving files:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
     }
-
-    // Retrieves the parent ID and the page number from the req query.
-    const { parentId, page = 0 } = req.query;
-    const query = { userId: ObjectId(userId) };
-    if (parentId) {
-      query.parentId = ObjectId(parentId);
-    }
-
-    // Retrieves the list of files from the database.
-    const files = await dbClient.db.collection('files')
-      .find(query)
-      .skip(page * 20)
-      .limit(20)
-      .toArray();
-
-    // Formats the list
-    const filesFormatted = files.map((file) => ({
-      id: file._id,
-      userId: file.userId,
-      name: file.name,
-      type: file.type,
-      isPublic: file.isPublic,
-      parentId: file.parentId,
-    }));
-
-    return res.status(200).json(filesFormatted);
   }
 }

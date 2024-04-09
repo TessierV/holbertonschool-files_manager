@@ -15,8 +15,11 @@ router.get('/disconnect', AuthController.getDisconnect.bind(AuthController));
 router.get('/users/me', UsersController.getMe.bind(UsersController));
 
 router.post('/files', FilesController.postUpload.bind(FilesController));
-
+// 6. Get and list file
 router.get('/files/:id', FilesController.getShow.bind(FilesController));
 router.get('/files', FilesController.getIndex.bind(FilesController));
+// 7. File publish/unpublish
+router.put('files/:id/publish', FilesController.putPublish.bind(FilesController));
+router.put('files/:id/publish', FilesController.putUnpublish.bind(FilesController));
 
 export default router;

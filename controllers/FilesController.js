@@ -184,4 +184,62 @@ export default class FilesController {
 
     return res.status(200).json(filesFormatted);
   }
+
+  static async putPublish(req, res) {
+    // Get authentication token from request header
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Retrieve file information from database
+    const filesCollection = dbClient.db.collection('files');
+    const fileID = ObjectId(req.params.id);
+    const userID = ObjectId(userId);
+
+    // Retrieve file information from database using constants
+    const file = await filesCollection.findOne({ _id: fileID, userId: userID });
+    if (!file) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    // Update isPublic field to true
+    const setUpdate = {
+      $set: { isPublic: true, }
+    };
+    await filesCollection.updateOne({ _id: fileID }, setUpdate);
+    // Return updated file document
+    return res.status(200).json(file);
+  }
+
+  static async putUnpublish(req, res) {
+    // Get authentication token from request header
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Retrieve file information from database
+    const filesCollection = dbClient.db.collection('files');
+    const fileID = ObjectId(req.params.id);
+    const userID = ObjectId(userId);
+
+    // Retrieve file information from database using constants
+    const file = await filesCollection.findOne({ _id: fileID, userId: userID });
+    if (!file) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    // Update isPublic field to False
+    const setUpdate = {
+      $set: { isPublic: false, }
+    };
+
+    await filesCollection.updateOne({ _id: fileID }, setUpdate);
+    // Return updated file document
+    return res.status(200).json(file);
+  }
+
 }

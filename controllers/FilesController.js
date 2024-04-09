@@ -129,7 +129,12 @@ export default class FilesController {
 
     // Retrieve file information from database
     const { id } = req.params;
-    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(id), userId: ObjectId(userId) });
+    const filesCollection = dbClient.db.collection('files');
+    const fileID = ObjectId(id);
+    const objID = ObjectId(userId);
+    // Retrieve file information from database using constants
+    const file = await filesCollection.findOne({ _id: fileID, userId: objID });
+
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
     }

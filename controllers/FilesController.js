@@ -7,6 +7,8 @@ const { ObjectId } = require('mongodb');
 const Bull = require('bull');
 
 export default class FilesController {
+
+  // Method to upload a file
   static async postUpload(req, res) {
     const fileQueue = new Bull('fileQueue');
     const token = req.header('X-token');
@@ -31,7 +33,7 @@ export default class FilesController {
 
     const fileData = req.body.data;
     if (!fileData && ['file', 'image'].includes(fileType)) {
-      return response.status(400).send({ error: 'Missing data' });
+      return res.status(400).send({ error: 'Missing data' });
     }
 
     const user = await dbClient.db.collection('users').findOne({ _id: ObjectId(redisToken) });
@@ -66,11 +68,11 @@ export default class FilesController {
       await dbClient.db.collection('files').insertOne(file);
       return res.status(201).send({
         id: file._id,
-	userID: file.userID,
-	name: file.name,
-	type: file.type,
-	isPublic: file.isPublic,
-	parentId: file.parentId,
+        userID: file.userID,
+        name: file.name,
+        type: file.type,
+        isPublic: file.isPublic,
+        parentId: file.parentId,
       });
     }
 
@@ -115,5 +117,65 @@ export default class FilesController {
       parentId: file.parentId,
     });
   }
-}
 
+  static async getShow(req, res) {
+    // Get authentication token from request header
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Retrieve file information from database
+    const { id } = req.params;
+    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(id), userId: ObjectId(userId) });
+    if (!file) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    return res.status(200).json({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    });
+  }
+
+  // Method to retrieve the list of files
+  static async getIndex(req, res) {
+    // Get authentication token from request header
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get parent ID and page number from request query
+    const { parentId, page = 0 } = req.query;
+    const query = { userId: ObjectId(userId) };
+    if (parentId) {
+      query.parentId = ObjectId(parentId);
+    }
+
+    // Retrieve the list of files from the database
+    const files = await dbClient.db.collection('files')
+      .find(query)
+      .skip(page * 20)
+      .limit(20)
+      .toArray();
+
+    // Format the list of files
+    const filesFormatted = files.map((file) => ({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: file.isPublic,
+      parentId: file.parentId,
+    }));
+
+    return res.status(200).json(filesFormatted);
+  }
+}

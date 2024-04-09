@@ -16,4 +16,7 @@ router.get('/users/me', UsersController.getMe.bind(UsersController));
 
 router.post('/files', FilesController.postUpload.bind(FilesController));
 
+router.get('/files/:id', FilesController.getShow.bind(FilesController));
+router.get('/files', FilesController.getIndex.bind(FilesController));
+
 export default router;

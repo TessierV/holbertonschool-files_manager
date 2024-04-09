@@ -120,15 +120,23 @@ export default class FilesController {
 
   static async getShow(req, res) {
     // Get authentication token from request header
-    const token = req.headers['x-token'];
-    const userId = await redisClient.get(`auth_${token}`);
+    const TOKEN_HEADER_KEY = 'x-token';
+    const token = req.headers[TOKEN_HEADER_KEY];
+    const authKey = `auth_${token}`;
+    const userId = await redisClient.get(authKey);
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     // Retrieve file information from database
     const { id } = req.params;
-    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(id), userId: ObjectId(userId) });
+    // Define query constants
+    const filesCollection = dbClient.db.collection('files');
+    const fileID = ObjectId(id);
+    const objID = ObjectId(userId);
+
+    // Retrieve file information from database using constants
+    const file = await filesCollection.findOne({ _id: fileID, userId: objID });
     if (!file) {
       return res.status(404).json({ error: 'Not found' });
     }

@@ -70,7 +70,7 @@ DB_DATABASE=files_manager``
 
 <br>
 <h3>Students :
-    <a href="https://www.linkedin.com/in/marianne-arrué-01650429/">
+    <a href="https://www.linkedin.com/in/yunusemretokyay/">
        <img alt="Anurag Hazra | CodeSandbox" height="20px" src="https://img.shields.io/badge/YunusEmreTokyay-4A6552?style=for-the-badge&logo=linkedin&color=CD3544&logoColor=white" />
     </a>
     <a href="https://www.linkedin.com/in/vanessa-tessier-601794252/">

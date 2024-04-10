@@ -82,23 +82,12 @@ export default class FilesController {
     const Data = Buffer.from(fileData, 'base64');
     const filePath = `${folderPath}/${localPathFile}`;
 
-    await fs.mkdir(folderPath, { recursive: true }, (error) => {
-      if (error) {
-        return res.status(400).send({ error: error.message });
-      }
-      else {
-        return true;
-      }
-    });
-
-    await fs.writeFile(filePath, Data, (error) => {
-      if (error) {
-        return res.status(400).send({ error: error.message });
-      }
-      else {
-        return true;
-      }
-    });
+    try {
+      await fs.promises.mkdir(folderPath, { recursive: true });
+      await fs.promises.writeFile(filePath, Data);
+    } catch (error) {
+      return res.status(400).send({ error: error.message });
+    };
 
     file.localPath = filePath;
     await dbClient.db.collection('files').insertOne(file);

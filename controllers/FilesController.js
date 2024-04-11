@@ -212,15 +212,6 @@ export default class FilesController {
     const fileID = ObjectId(req.params.id);
     const userID = ObjectId(userId);
 
-    const file = await dbClient.db.collection('files').findOneAndUpdate({ _id: fileID, userId: userID });
-    if (!file || !file.value) {
-      return res.status(404).json({ error: 'Not found' });
-    }
-
-    if (!file.isPublic) {
-      return res.status(400).json({ error: 'File already unpublished' });
-    }
-
     const setUpdate = {
       $set: { isPublic: false },
     };
@@ -232,7 +223,7 @@ export default class FilesController {
     );
 
     if (!updatedFile.value.isPublic || !updatedFile.value) {
-      return response.status(404).json({ error: 'Not found' });
+      return res.status(404).json({ error: 'Not found' });
     }
 
     return res.status(200).json(updatedFile.value);

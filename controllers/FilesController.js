@@ -170,9 +170,6 @@ export default class FilesController {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    if (file.isPublic) {
-      return res.status(404).json({ error: 'Not found' });
-    }
 
     const setUpdate = {
       $set: { isPublic: true },

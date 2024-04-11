@@ -10,11 +10,11 @@ class DBClient {
     const url = `mongodb://${host}:${port}`;
     this.status = false;
 
-    const client = new MongoClient(url, {useNewUrlParser: true, useUnifiedTopology: true});
+    const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
 
     client.connect((error) => {
       if (error) {
-	this.status = false;
+        this.status = false;
       } else {
         this.status = true;
         this.db = client.db(database);

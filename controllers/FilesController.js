@@ -153,6 +153,10 @@ export default class FilesController {
 
   static async putPublish(req, res) {
     const token = req.headers['x-token'];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     const userId = await redisClient.get(`auth_${token}`);
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -167,7 +171,7 @@ export default class FilesController {
     }
 
     if (file.isPublic) {
-      return res.status(400).json({ error: 'File already published' });
+      return res.status(404).json({ error: 'Not found' });
     }
 
     const setUpdate = {
@@ -184,7 +188,11 @@ export default class FilesController {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    return res.status(200).json(updatedFile.value);
+    if (!updatedFile.value.isPublic) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    return res.status(200).json(updatedFile);
   }
 
   static async putUnpublish(req, res) {
@@ -207,11 +215,15 @@ export default class FilesController {
       { returnOriginal: false },
     );
 
-    if (!updatedFile.value.isPublic || !updatedFile.value) {
+    if (!updatedFile.value) {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    return res.status(200).json(updatedFile.value);
+    if (!updatedFile.value.isPublic) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    return res.status(200).json(updatedFile);
   }
 
   // ex 8

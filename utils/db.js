@@ -1,6 +1,5 @@
 import { MongoClient } from 'mongodb';
 
-
 // constructor that creates a client to MongoDB
 class DBClient {
   constructor() {

@@ -1,5 +1,5 @@
 import { MongoClient } from 'mongodb';
-const { ObjectID } = require('mongodb');
+
 
 // constructor that creates a client to MongoDB
 class DBClient {

@@ -221,14 +221,21 @@ export default class FilesController {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    // Update isPublic field to False
-    const setUpdate = {
-      $set: { isPublic: false, }
-    };
 
-    await filesCollection.updateOne({ _id: fileID }, setUpdate);
-    // Return updated file document
-    return res.status(200).json(file);
+    const setUpdate = {
+      $set: { isPublic: true }
+    };
+    const updatedFile = await filesCollection.findOneAndUpdate(
+      { _id: fileID, userId: userID },
+      setUpdate,
+      { returnOriginal: false }
+    );
+
+    if (!updatedFile.value) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    return res.status(200).json(updatedFile.value);
   }
 
 }

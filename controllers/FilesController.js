@@ -213,11 +213,7 @@ export default class FilesController {
     const userID = ObjectId(userId);
 
     const file = await dbClient.db.collection('files').findOneAndUpdate({ _id: fileID, userId: userID });
-    if (!file) {
-      return res.status(404).json({ error: 'Not found' });
-    }
-
-    if (!file.value) {
+    if (!file || !file.value) {
       return res.status(404).json({ error: 'Not found' });
     }
 
@@ -235,8 +231,8 @@ export default class FilesController {
       { returnOriginal: false },
     );
 
-    if (!updatedFile.value) {
-      return res.status(404).json({ error: 'Not found' });
+    if (!updatedFile.value.isPublic || !updatedFile.value) {
+      return response.status(404).json({ error: 'Not found' });
     }
 
     return res.status(200).json(updatedFile.value);

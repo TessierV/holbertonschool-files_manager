@@ -176,7 +176,7 @@ export default class FilesController {
 
     const updatedFile = await dbClient.db.collection('files').findOneAndUpdate(
       { _id: fileID, userId: userID },
-      setUpdate,
+      { setUpdate },
       { returnOriginal: false },
     );
 
@@ -203,7 +203,7 @@ export default class FilesController {
 
     const updatedFile = await dbClient.db.collection('files').findOneAndUpdate(
       { _id: fileID, userId: userID },
-      setUpdate,
+      { setUpdate },
       { returnOriginal: false },
     );
 

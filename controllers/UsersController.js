@@ -1,8 +1,8 @@
+import sha1 from 'sha1';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
-import sha1 from 'sha1';
-const { ObjectId } = require('mongodb');
 
+const { ObjectId } = require('mongodb');
 
 export default class UsersController {
   static async postNew(req, res) {
@@ -16,7 +16,7 @@ export default class UsersController {
         return res.status(400).send({ error: 'Missing password' });
       }
 
-      let checkExistingUserByEmail = await dbClient.db.collection('users').findOne({ email: userEmail });
+      const checkExistingUserByEmail = await dbClient.db.collection('users').findOne({ email: userEmail });
       if (checkExistingUserByEmail) {
         return res.status(400).send({ error: 'Already exist' });
       }
@@ -28,9 +28,8 @@ export default class UsersController {
         const result = await dbClient.db.collection('users').insertOne(newUser);
         const userId = result.insertedId;
         return res.status(201).send({ id: userId, email: userEmail });
-
       } catch (error) {
-        return res.status(error.status).send({ 'error': error });
+        return res.status(error.status).send({ error });
       }
     } catch (error) {
       return res.status(500).send({ error: 'Server error' });

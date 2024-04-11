@@ -1,13 +1,12 @@
+import { v4 as uuidv4 } from 'uuid';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
-import { v4 as uuidv4 } from 'uuid';
 
 const fs = require('fs');
 const { ObjectId } = require('mongodb');
 const Bull = require('bull');
 
 export default class FilesController {
-
   // Method to upload a file
   static async postUpload(req, res) {
     const fileQueue = new Bull('fileQueue');
@@ -87,7 +86,7 @@ export default class FilesController {
       await fs.promises.writeFile(filePath, Data);
     } catch (error) {
       return res.status(400).send({ error: error.message });
-    };
+    }
 
     file.localPath = filePath;
     await dbClient.db.collection('files').insertOne(file);
@@ -195,7 +194,7 @@ export default class FilesController {
 
     // Update isPublic field to true
     const setUpdate = {
-      $set: { isPublic: true, }
+      $set: { isPublic: true },
     };
     await filesCollection.updateOne({ _id: fileID }, setUpdate);
     // Return updated file document
@@ -221,14 +220,13 @@ export default class FilesController {
       return res.status(404).json({ error: 'Not found' });
     }
 
-
     const setUpdate = {
-      $set: { isPublic: true }
+      $set: { isPublic: true },
     };
     const updatedFile = await filesCollection.findOneAndUpdate(
       { _id: fileID, userId: userID },
       setUpdate,
-      { returnOriginal: false }
+      { returnOriginal: false },
     );
 
     if (!updatedFile.value) {
@@ -237,5 +235,4 @@ export default class FilesController {
 
     return res.status(200).json(updatedFile.value);
   }
-
 }

@@ -80,7 +80,8 @@ export default class FilesController {
       const localPath = `${folderPath}/${uuidv4()}`;
       const buff = Buffer.from(data, 'base64');
       await fs.promises.writeFile(localPath, buff);
-      newFile = await dbClient.db.collection('files').insertOne({
+      const dbClientCollection = dbClient.db.collection('files');
+      newFile = await dbClientCollection.insertOne({
         userId: ObjectId(userId),
         name,
         type,
@@ -217,8 +218,10 @@ export default class FilesController {
     const fileId = ObjectId(req.params.id);
     const filesCollection = dbClient.db.collection('files');
     const file = await filesCollection.findOne({ _id: fileId });
+    const idString = user._id.toString();
+    const userIDString = file.userId.toString();
     // Check if file is not found or user does not own the file, return not found error
-    if (!file || user._id.toString() !== file.userId.toString()) {
+    if (!file || idString !== userIDString) {
       return res.status(404).json({ error: 'Not found' });
     }
 

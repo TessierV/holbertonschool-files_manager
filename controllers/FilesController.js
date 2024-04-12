@@ -225,7 +225,7 @@ export default class FilesController {
     // Update file visibility in the database
     const update = {
       $set: {
-        isPublic: isPublic,
+        isPublic,
       },
     };
 

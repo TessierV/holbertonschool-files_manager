@@ -2,7 +2,7 @@
 <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=44&pause=1000&color=CD3544&center=true&vCenter=true&width=935&height=60&lines=FILE+MANAGER" alt="Typing SVG" /></a><br>
 <br>
 
-## Overview  
+## Overview
 This is a simple file manager application built with Node.js, Express, MongoDB, and Redis.
 
 <br>
@@ -26,18 +26,23 @@ This is a simple file manager application built with Node.js, Express, MongoDB, 
 
 ## Installation
 
-1. Clone the repository:  
+1. Clone the repository:
 ``git clone https://token@github.com/yunusemretokyay1/file-manager-app.git``
 
-2. Install dependencies:  
+2. Install dependencies:
 ``npm install``
 ``npm install Node / Express / Mongodb / Redis / Bull``
 
-3. Setup Envrionment:  
+3. Setup Envrionment:
 ``PORT=5000
 DB_HOST=localhost
 DB_PORT=27017
 DB_DATABASE=files_manager``
+
+4. Compile:
+``npm run start-server``
+``redis-server``
+``mongod``
 <br>
 
 ## API Endpoints
